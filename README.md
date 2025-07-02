@@ -357,3 +357,9 @@ vercel domains add yourdomain.com
 ---
 
 🎯 **Quick Start**: GitHubシークレット3つ（VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID）を設定するだけで、完全自動デプロイが開始されます！
+
+---
+
+## 🚀 デプロイテスト履歴
+
+✅ **2025-07-02 15:30** - Vercelデプロイ設定完了・CI/CDテスト実行中
