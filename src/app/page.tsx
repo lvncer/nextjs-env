@@ -9,8 +9,21 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">{websiteTitle}</h1>
-          <p className="text-xl text-gray-600">{description}</p>
+          <h1 className="text-4xl font-bold text-gray-800 mb-4" data-testid="home-title">
+            {websiteTitle}
+          </h1>
+          <p className="text-xl text-gray-600" data-testid="home-description">
+            {description}
+          </p>
+          <div className="mt-6">
+            <a
+              href="/test-page"
+              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              data-testid="test-page-link"
+            >
+              テストページを見る
+            </a>
+          </div>
         </header>
 
         <main className="grid md:grid-cols-2 gap-8">
