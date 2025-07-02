@@ -217,7 +217,7 @@ GitHubリポジトリの **Settings > Secrets and variables > Actions** で以�
 | ------------------- | --------------------- | ------------------------------------------------------------------------- |
 | `VERCEL_TOKEN`      | Personal Access Token | [Vercel Account Settings](https://vercel.com/account/tokens)              |
 | `VERCEL_ORG_ID`     | Team/Organization ID  | `vercel teams ls` または [Vercel Dashboard](https://vercel.com/dashboard) |
-| `VERCEL_PROJECT_ID` | Project ID            | `vercel project ls` または プロジェクト設定ページ                         |
+| `VERCEL_PROJECT_ID` | Project ID            | `.vercel/project.json` または Vercel Dashboard で確認                     |
 
 #### VERCEL_TOKEN取得手順
 
@@ -239,10 +239,22 @@ vercel teams ls
 #### VERCEL_PROJECT_ID取得手順
 
 ```bash
-# CLI経由で確認
-vercel project ls
+# 方法1: プロジェクトリンク後に生成されるファイルから確認
+# プロジェクトディレクトリで以下を実行してプロジェクトをリンク
+vercel login
+vercel --confirm
 
-# または、プロジェクトページ > Settings > General > Project ID をコピー
+# リンク完了後、.vercel/project.json ファイルが生成される
+cat .vercel/project.json
+# 出力例: {"orgId":"team_xxx","projectId":"prj_xxx"}
+
+# 方法2: Vercel Dashboard で確認
+# 1. https://vercel.com/dashboard にアクセス
+# 2. プロジェクトを選択
+# 3. Settings > General > Project ID をコピー
+
+# 方法3: Vercel CLI（詳細表示）
+vercel project ls --format json | jq '.[0].id'
 ```
 
 ### 3. デプロイフロー
@@ -292,12 +304,12 @@ vercel project ls
 
 #### よくあるエラー
 
-| エラー              | 原因                       | 解決方法                                  |
-| ------------------- | -------------------------- | ----------------------------------------- |
-| `Invalid token`     | VERCEL_TOKEN が無効        | 新しいトークンを生成して再設定            |
-| `Project not found` | VERCEL_PROJECT_ID が間違い | `vercel project ls` で正しいIDを確認      |
-| `Team not found`    | VERCEL_ORG_ID が間違い     | `vercel teams ls` で正しいIDを確認        |
-| `Build failed`      | Next.js Build エラー       | ローカルで `npm run build` してエラー修正 |
+| エラー              | 原因                       | 解決方法                                                 |
+| ------------------- | -------------------------- | -------------------------------------------------------- |
+| `Invalid token`     | VERCEL_TOKEN が無効        | 新しいトークンを生成して再設定                           |
+| `Project not found` | VERCEL_PROJECT_ID が間違い | `.vercel/project.json` または Dashboard で正しいIDを確認 |
+| `Team not found`    | VERCEL_ORG_ID が間違い     | `vercel teams ls` で正しいIDを確認                       |
+| `Build failed`      | Next.js Build エラー       | ローカルで `npm run build` してエラー修正                |
 
 #### デプロイ失敗時の確認手順
 
