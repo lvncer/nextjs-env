@@ -198,7 +198,7 @@ jobs:
     name: 🚀 Deploy Preview
     runs-on: ubuntu-latest
     needs: [lint-and-format, unit-and-integration-tests, build, type-check]
-    if: github.event_name == 'pull_request' && false # 🚫 Disabled until Vercel secrets are configured
+    if: github.event_name == 'pull_request' # ✅ Enabled - Configure Vercel secrets in GitHub repository settings
 
     steps:
       - name: 📥 Checkout code
@@ -229,7 +229,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       [lint-and-format, unit-and-integration-tests, build, e2e-tests, security-audit, type-check]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && false # 🚫 Disabled until Vercel secrets are configured
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' # ✅ Enabled - Configure Vercel secrets in GitHub repository settings
 
     steps:
       - name: 📥 Checkout code
@@ -259,7 +259,7 @@ jobs:
   notification:
     name: 📢 Notify Results
     runs-on: ubuntu-latest
-    needs: [e2e-tests, security-audit, type-check] # 🔄 Updated dependencies (deployment disabled)
+    needs: [e2e-tests, security-audit, type-check, deploy-production] # 🔄 Updated dependencies (deployment enabled)
     if: always()
 
     steps:
@@ -272,11 +272,22 @@ jobs:
           echo "🎭 85 E2E tests: PASSED"
           echo "🛡️ Security audit: PASSED"
           echo "📝 TypeScript check: PASSED"
-          echo "ℹ️  Deployment: DISABLED (configure Vercel secrets to enable)"
+          if [[ "${{ needs.deploy-production.result }}" == "success" ]]; then
+            echo "🚀 Production deployment: SUCCESS"
+          elif [[ "${{ needs.deploy-production.result }}" == "failure" ]]; then
+            echo "❌ Production deployment: FAILED"
+          elif [[ "${{ needs.deploy-production.result }}" == "skipped" ]]; then
+            echo "⏭️  Production deployment: SKIPPED (not main branch or missing secrets)"
+          else
+            echo "⏳ Production deployment: NOT RUN"
+          fi
 
       - name: 📢 Notify failure
-        if: ${{ needs.e2e-tests.result == 'failure' || needs.security-audit.result == 'failure' || needs.type-check.result == 'failure' }}
+        if: ${{ needs.e2e-tests.result == 'failure' || needs.security-audit.result == 'failure' || needs.type-check.result == 'failure' || needs.deploy-production.result == 'failure' }}
         run: |
           echo "❌ CI/CD Pipeline failed!"
           echo "🔍 Please check the logs for more details"
+          if [[ "${{ needs.deploy-production.result }}" == "failure" ]]; then
+            echo "🚨 Production deployment failed - check Vercel secrets and configuration"
+          fi
           exit 1

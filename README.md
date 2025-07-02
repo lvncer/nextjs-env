@@ -162,10 +162,10 @@ e2e/
 4. **🎭 E2E Tests** - Playwright (✅ 85テスト成功)
 5. **🛡️ Security Audit** - npm audit・audit-ci
 6. **📝 TypeScript Type Check** - tsc (✅ 型チェック通過)
-7. **🚀 Deploy Preview** - PR時プレビューデプロイ (🚫 現在無効化)
-8. **🚀 Deploy Production** - main branchへの自動デプロイ (🚫 現在無効化)
+7. **🚀 Deploy Preview** - PR時プレビューデプロイ (✅ 設定完了)
+8. **🚀 Deploy Production** - main branchへの自動デプロイ (✅ 設定完了)
 
-> **📝 Note**: デプロイ機能は準備済みですが、Vercelシークレット未設定のため現在無効化されています。
+> **📝 Note**: デプロイ機能はすべて設定済みです。Vercelとの連携設定方法は下記をご参照ください。
 
 ### Test Pages
 
@@ -177,3 +177,171 @@ e2e/
   - インタラクション機能テスト
   - お問い合わせフォーム
   - ナビゲーションテスト
+
+## Vercel デプロイ設定
+
+🚀 **自動デプロイ完全対応** - GitHub Actions + Vercel連携
+
+### 1. Vercelプロジェクトの準備
+
+#### Vercelアカウント作成・ログイン
+
+```bash
+# Vercel CLIをインストール
+npm i -g vercel
+
+# Vercelにログイン
+vercel login
+
+# プロジェクトを初期化（GitHubリポジトリをインポート）
+vercel
+```
+
+#### 必要な情報を取得
+
+```bash
+# プロジェクト情報を表示
+vercel project ls
+
+# 組織情報を表示
+vercel teams ls
+```
+
+### 2. GitHubシークレット設定
+
+GitHubリポジトリの **Settings > Secrets and variables > Actions** で以下を設定：
+
+#### 必須シークレット
+
+| Name                | Value                 | 取得方法                                                                  |
+| ------------------- | --------------------- | ------------------------------------------------------------------------- |
+| `VERCEL_TOKEN`      | Personal Access Token | [Vercel Account Settings](https://vercel.com/account/tokens)              |
+| `VERCEL_ORG_ID`     | Team/Organization ID  | `vercel teams ls` または [Vercel Dashboard](https://vercel.com/dashboard) |
+| `VERCEL_PROJECT_ID` | Project ID            | `vercel project ls` または プロジェクト設定ページ                         |
+
+#### VERCEL_TOKEN取得手順
+
+1. [Vercel Account Settings](https://vercel.com/account/tokens) にアクセス
+2. **Create Token** をクリック
+3. Token名を入力（例: `GitHub-Actions-Deploy`）
+4. Scope: **Full Account** を選択
+5. 生成されたトークンをコピーしてGitHubシークレットに設定
+
+#### VERCEL_ORG_ID取得手順
+
+```bash
+# CLI経由で確認
+vercel teams ls
+
+# または、Vercel Dashboard > Settings > General > Team ID をコピー
+```
+
+#### VERCEL_PROJECT_ID取得手順
+
+```bash
+# CLI経由で確認
+vercel project ls
+
+# または、プロジェクトページ > Settings > General > Project ID をコピー
+```
+
+### 3. デプロイフロー
+
+#### プレビューデプロイ（PR作成時）
+
+```bash
+# プルリクエスト作成時に自動実行
+# ✅ Lint & Format Check
+# ✅ Unit & Integration Tests
+# ✅ Build Application
+# ✅ TypeScript Type Check
+# 🚀 Deploy Preview to Vercel
+```
+
+#### プロダクションデプロイ（main merge時）
+
+```bash
+# main branchへのpush時に自動実行
+# ✅ 全テストスイート（Unit + Integration + E2E）
+# ✅ Security Audit
+# ✅ Build Application
+# 🚀 Deploy Production to Vercel
+```
+
+### 4. デプロイ確認
+
+#### GitHub Actionsログ確認
+
+```
+🎉 CI/CD Pipeline completed successfully!
+✅ All tests passed
+🧪 60 Unit & Integration tests: PASSED
+🎭 85 E2E tests: PASSED
+🛡️ Security audit: PASSED
+📝 TypeScript check: PASSED
+🚀 Production deployment: SUCCESS
+```
+
+#### Vercelダッシュボード確認
+
+- [Vercel Dashboard](https://vercel.com/dashboard) でデプロイ状況確認
+- プレビューURL・プロダクションURLが自動生成
+- デプロイログとパフォーマンス情報を閲覧可能
+
+### 5. トラブルシューティング
+
+#### よくあるエラー
+
+| エラー              | 原因                       | 解決方法                                  |
+| ------------------- | -------------------------- | ----------------------------------------- |
+| `Invalid token`     | VERCEL_TOKEN が無効        | 新しいトークンを生成して再設定            |
+| `Project not found` | VERCEL_PROJECT_ID が間違い | `vercel project ls` で正しいIDを確認      |
+| `Team not found`    | VERCEL_ORG_ID が間違い     | `vercel teams ls` で正しいIDを確認        |
+| `Build failed`      | Next.js Build エラー       | ローカルで `npm run build` してエラー修正 |
+
+#### デプロイ失敗時の確認手順
+
+1. **GitHub Actions ログ確認**
+
+   ```
+   Actions > 失敗したワークフロー > 🚀 Deploy to Production
+   ```
+
+2. **Vercel Build ログ確認**
+
+   ```
+   Vercel Dashboard > Project > Functions > Build Logs
+   ```
+
+3. **ローカルビルドテスト**
+   ```bash
+   npm run build
+   npm start
+   ```
+
+### 6. 高度な設定
+
+#### 環境変数の設定
+
+```bash
+# Vercel環境変数設定
+vercel env add NEXT_PUBLIC_API_URL
+vercel env add DATABASE_URL
+```
+
+#### カスタムドメイン設定
+
+```bash
+# カスタムドメイン追加
+vercel domains add yourdomain.com
+```
+
+#### Performance Monitoring
+
+- Vercel Analytics自動有効化
+- Core Web Vitals測定
+- Real User Monitoring (RUM)
+
+---
+
+🎯 **Quick Start**: GitHubシークレット3つ（VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID）を設定するだけで、完全自動デプロイが開始されます！
