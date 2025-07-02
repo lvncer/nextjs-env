@@ -39,64 +39,56 @@ npm install -D prettier eslint-plugin-prettier eslint-config-prettier @typescrip
 - 参考 url: [Options](https://prettier.io/docs/options.html)
 - 参考 url: [Ignoring Code](https://prettier.io/docs/ignore)
 
-- prettier.config.js (example)
+## Install Husky + lint-staged
 
-  ```js
-  module.exports = {
-    printWidth: 100,
-    tabWidth: 2,
-    useTabs: false,
-    semi: true,
-    singleQuote: false,
-    quoteProps: "as-needed",
-    jsxSingleQuote: false,
-    trailingComma: "es5",
-    bracketSpacing: true,
-    bracketSameLine: false,
-    arrowParens: "always",
-    proseWrap: "preserve",
-    htmlWhitespaceSensitivity: "css",
-    endOfLine: "lf",
-    embeddedLanguageFormatting: "off",
-  };
-  ```
+Git commitの前に自動でPrettierとESLintを実行してコード品質を保つ設定
 
-- .prettierignore (exaple)
+### Install Packages
 
-  ```ignorefile
-  # Ignore artifacts:
-  build
-  coverage
+```cmd
+npm install --save-dev husky@9.1.7 lint-staged@16.1.2
+```
 
-  # Ignore all HTML files:
-  **/*.html
+### Initialize Husky
 
-  .next/*
-  env/*
-  node_modules/*
-  public/*
-  ```
+```cmd
+npx husky init
+```
 
-- .eslintrc.js
+### Configuration
 
-  ```js
-  module.exports = {
-    root: true,
-    parser: "@typescript-eslint/parser",
-    extends: [
-      "plugin:@typescript-eslint/recommended",
-      "next/core-web-vitals",
-      "plugin:prettier/recommended",
+`package.json` に以下の設定が自動追加される：
+
+```json
+{
+  "scripts": {
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
     ],
-    plugins: ["@typescript-eslint"],
-    rules: {},
-  };
-  ```
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
+  }
+}
+```
 
-- package.json (scripts alias)
+### Pre-commit Hook
 
-  ```json
-  "format": "prettier --write ."
-  ```
+`.husky/pre-commit` ファイル：
 
-### Husky and lint-staged
+```bash
+npx lint-staged
+```
+
+### 動作内容
+
+- コミット時に変更されたファイルのみをチェック
+- TypeScript/JavaScript ファイル → ESLint自動修正 → Prettier整形
+- JSON/CSS/Markdown ファイル → Prettier整形
+- エラーがある場合はコミットを中止
+
+##
